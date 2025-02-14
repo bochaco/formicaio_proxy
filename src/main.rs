@@ -15,7 +15,7 @@ async fn proxy_handler(
 ) -> Result<Response<Incoming>, Box<dyn Error + Send + Sync>> {
     let uri = format!("http://{target_addr}{}", req.uri().path());
     let url = uri.parse::<hyper::Uri>()?;
-    println!("Request forwarded to {url}");
+    //println!("Request forwarded to {url}");
 
     let stream = TcpStream::connect(target_addr).await?;
     let io = TokioIo::new(stream);
@@ -33,9 +33,7 @@ async fn proxy_handler(
     // Copy headers
     let headers = req.headers().clone();
     let mut req = builder.body(req.into_body())?;
-    for (key, value) in headers.iter() {
-        let _prev = req.headers_mut().insert(key, value.clone());
-    }
+    *req.headers_mut() = headers;
 
     let response = sender.send_request(req).await?;
     Ok(response)
